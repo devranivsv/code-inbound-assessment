@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { User } from "./user.entity";
@@ -11,7 +16,11 @@ export class UserService {
     private userRepository: Repository<User>
   ) {}
 
-  async createUser(username: string, email: string, password: string): Promise<User> {
+  async createUser(
+    username: string,
+    email: string,
+    password: string
+  ): Promise<User> {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
       const user = this.userRepository.create({
@@ -22,7 +31,7 @@ export class UserService {
       return await this.userRepository.save(user);
     } catch (error) {
       let errorName = "Registration Failed";
-      if (error.code == 23505) {
+      if (error.code === "23505") {
         errorName = "Username already exists";
       }
       throw new HttpException(errorName, HttpStatus.NOT_ACCEPTABLE);
@@ -39,7 +48,10 @@ export class UserService {
       return user;
     } catch (error) {
       console.log(error);
-      throw new HttpException("Failed to fetch user", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        "Failed to fetch user",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -48,7 +60,10 @@ export class UserService {
       return this.userRepository.find();
     } catch (error) {
       console.log(error);
-      throw new HttpException("Failed to fetch users", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        "Failed to fetch users",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -61,7 +76,10 @@ export class UserService {
       }
     } catch (error) {
       console.log(error);
-      throw new HttpException("Failed to update user", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        "Unable to update user",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
@@ -70,11 +88,11 @@ export class UserService {
       const deletedUser = await this.userRepository.delete(id);
 
       if (deletedUser.affected === 0) {
-        throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+        throw new NotFoundException("User not found");
       }
     } catch (error) {
       console.log(error);
-      throw new HttpException("Failed to delete user", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, +error.status);
     }
   }
 }

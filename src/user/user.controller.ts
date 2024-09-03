@@ -1,4 +1,14 @@
-import { Controller, Get, Body, Param, Delete, Put, UseGuards, HttpException, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Body,
+  Param,
+  Delete,
+  Put,
+  UseGuards,
+  HttpException,
+  HttpStatus,
+} from "@nestjs/common";
 import { UserService } from "./user.service";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 
@@ -12,28 +22,37 @@ export class UserController {
     try {
       return await this.userService.findAll();
     } catch (error) {
-      console.log(error.message);
-      throw new HttpException("Failed to retrieve users", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        "Failed to retrieve users",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
-  @Put("update:id")
+  @Put("update/:id")
   async update(@Param("id") id: number, @Body() body: any) {
     try {
-      return await this.userService.updateUser(id, body);
+      await this.userService.updateUser(id, body);
+      return {
+        message: `User ${id} updated successfully`,
+      };
     } catch (error) {
-      console.log(error.message);
-      throw new HttpException(`Failed to update user with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        `Failed to update user with ID ${id}`,
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
     }
   }
 
-  @Delete("delete:id")
+  @Delete("delete/:id")
   async delete(@Param("id") id: number) {
     try {
-      return await this.userService.deleteUser(id);
+      await this.userService.deleteUser(id);
+      return {
+        message: `User ${id} removed successfully`,
+      };
     } catch (error) {
-      console.log(error.message);
-      throw new HttpException(`Failed to delete user with ID ${id}`, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(error.message, +error.status);
     }
   }
 }
